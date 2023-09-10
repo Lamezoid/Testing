@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Canvas Drawing</title>
+</head>
+<body>
+    <canvas id="myCanvas" width="400" height="400" style="border:1px solid black;"></canvas><br>
+    <button id="drawButton">Draw Pixels</button>
+    <input type="text" id="hexColor" placeholder="Hex Color Code" readonly>
+
+    <script>
+        const canvas = document.getElementById("myCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Function to put a pixel with a random color at a specified (x, y) coordinate
+        function putPixel(x, y) {
+            const randomColor = getRandomColor();
+            ctx.fillStyle = randomColor;
+            ctx.fillRect(x - 2, y - 2, 5, 5);
+        }
+
+        // Function to get the color of a pixel at a specified (x, y) coordinate
+        function getPixel(x, y) {
+            const pixelData = ctx.getImageData(x, y, 1, 1).data;
+            const color = `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
+            return color;
+        }
+
+        // Function to generate a random color
+        function getRandomColor() {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        // Event listener for the "Draw Pixels" button
+        document.getElementById("drawButton").addEventListener("click", () => {
+            for (let i = 0; i < 1000; i++) {
+                const x = Math.floor(Math.random() * canvas.width);
+                const y = Math.floor(Math.random() * canvas.height);
+                putPixel(x, y);
+            }
+        });
+
+        // Event listener for mouse click on the canvas
+        canvas.addEventListener("click", (event) => {
+            if (event.button === 0) {
+                // Left mouse button is clicked
+                const x = event.clientX - canvas.getBoundingClientRect().left;
+                const y = event.clientY - canvas.getBoundingClientRect().top;
+                const color = getPixel(x, y);
+                const hexColor = rgbToHex(color);
+                document.getElementById("hexColor").value = hexColor;
+            }
+        });
+
+        // Function to convert RGB color to Hex
+        function rgbToHex(rgbColor) {
+            const [r, g, b] = rgbColor.match(/\d+/g);
+            return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+        }
+    </script>
+</body>
+</html>
+
