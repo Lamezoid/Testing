@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Color Analysis</title>
+</head>
+<body>
+    <!-- Input for uploading an image -->
+    <input type="file" id="imageInput" accept="image/*">
+    <br>
+
+    <!-- Controls to adjust RED_THRESHOLD, BOX_SIZE, and OFFSET -->
+    <label for="redThreshold">Red Threshold:</label>
+    <input type="range" id="redThreshold" min="0" max="255" value="200">
+    <br>
+    <label for="boxSize">Box Size:</label>
+    <input type="range" id="boxSize" min="5" max="50" value="15">
+    <br>
+    <label for="offset">Offset:</label>
+    <input type="range" id="offset" min="1" max="20" value="10">
+    <br>
+
+    <!-- Canvas for displaying the image -->
+    <canvas id="imageCanvas" width="400" height="400"></canvas>
+    <br>
+    
+    <!-- Button to process boxes -->
+    <button id="processBoxes">Process boxes</button>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const imageCanvas = document.getElementById('imageCanvas');
+        const processBoxesButton = document.getElementById('processBoxes');
+        const redThresholdInput = document.getElementById('redThreshold');
+        const boxSizeInput = document.getElementById('boxSize');
+        const offsetInput = document.getElementById('offset');
+
+        // Add event listeners for inputs and button
+        imageInput.addEventListener('change', handleImageUpload);
+        processBoxesButton.addEventListener('click', processBoxes);
+        redThresholdInput.addEventListener('input', updateRedThreshold);
+        boxSizeInput.addEventListener('input', updateBoxSize);
+        offsetInput.addEventListener('input', updateOffset);
+
+        // Initial values for constants
+        let RED_THRESHOLD = 200;
+        let BOX_SIZE = 15;
+        let OFFSET = 10;
+
+        // Function to update RED_THRESHOLD when input changes
+        function updateRedThreshold() {
+            RED_THRESHOLD = parseInt(redThresholdInput.value);
+            analyzeImage();
+        }
+
+        // Function to update BOX_SIZE when input changes
+        function updateBoxSize() {
+            BOX_SIZE = parseInt(boxSizeInput.value);
+            analyzeImage();
+        }
+
+        // Function to update OFFSET when input changes
+        function updateOffset() {
+            OFFSET = parseInt(offsetInput.value);
+            analyzeImage();
+        }
+
+        // Function to handle image upload
+        function handleImageUpload() {
+            const file = imageInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+
+                    img.onload = function () {
+                        const ctx = imageCanvas.getContext('2d');
+
+                        ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+                        ctx.drawImage(img, 0, 0, imageCanvas.width, imageCanvas.height);
+
+                        analyzeImage();
+                    };
+                };
+
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Function to analyze the image colors
+        function analyzeImage() {
+            const ctx = imageCanvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+            const data = imageData.data;
+            const colorCounts = new Map();
+
+            for (let i = 0; i < data.length; i += 4) {
+                const color = getColorString(data, i);
+                colorCounts.set(color, (colorCounts.get(color) || 0) + 1);
+            }
+
+            const mostUsedColor = getMostUsedColor(colorCounts);
+            highlightPixels(data, mostUsedColor);
+        }
+
+        // Function to convert RGB data to a color string
+        function getColorString(data, index) {
+            return `rgb(${data[index]}, ${data[index + 1]}, ${data[index + 2]})`;
+        }
+
+        // Function to get the most used color
+        function getMostUsedColor(colorCounts) {
+            return [...colorCounts.entries()].reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+        }
+
+        // Function to highlight pixels of a specific color
+        function highlightPixels(data, colorToHighlight) {
+            for (let i = 0; i < data.length; i += 4) {
+                const color = getColorString(data, i);
+                if (color === colorToHighlight) {
+                    data[i] = 255;
+                    data[i + 1] = 0;
+                    data[i + 2] = 0;
+                }
+            }
+
+            const ctx = imageCanvas.getContext('2d');
+            ctx.putImageData(new ImageData(data, imageCanvas.width, imageCanvas.height), 0, 0);
+        }
+
+        // Function to find the top-left pixel to start processing
+        function findTopLeft() {
+            const ctx = imageCanvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+            const data = imageData.data;
+
+            let dot = { x: 0, y: 0 };
+
+            while (!isBrightRed(data, dot.x, dot.y) && dot.x < imageCanvas.width && dot.y < imageCanvas.height) {
+                dot.x++;
+                if (dot.x === imageCanvas.width) {
+                    dot.x = 0;
+                    dot.y++;
+                }
+            }
+            return dot;
+        }
+
+        // Function to process boxes
+        function processBoxes() {
+            const dot = findTopLeft();
+            dot.x += OFFSET;
+            dot.y += OFFSET;
+
+            const canvas = imageCanvas;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'blue';
+
+            let origX = dot.x;
+            const imageData = ctx.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+            const data = imageData.data;
+
+            while (dot.y < imageCanvas.height) {
+                while (dot.x < imageCanvas.width) {
+                    let tempx = dot.x;
+                    dot.x = skipRight(data, dot.x, dot.y) + OFFSET;
+                    ctx.fillRect(tempx, dot.y, BOX_SIZE, BOX_SIZE);
+                }
+                dot.x = origX;
+                dot.y = skipDown(data, dot.x, dot.y) + OFFSET;
+            }
+        }
+
+        // Function to skip right while checking for a specific color
+        function skipRight(data, x, y) {
+            while (isBrightRed(data, x, y) && x < imageCanvas.width) x++;
+            while (!isBrightRed(data, x, y) && x < imageCanvas.width) x++;
+            return x;
+        }
+
+        // Function to skip down while checking for a specific color
+        function skipDown(data, x, y) {
+            while (isBrightRed(data, x, y) && y < imageCanvas.height) y++;
+            while (!isBrightRed(data, x, y) && y < imageCanvas.height) y++;
+            return y;
+        }
+
+        // Function to check if a pixel is bright red
+        function isBrightRed(data, x, y) {
+            const index = (y * imageCanvas.width + x) * 4;
+            const [redValue, greenValue, blueValue] = [data[index], data[index + 1], data[index + 2]];
+            return redValue >= RED_THRESHOLD && greenValue < 50 && blueValue < 50;
+        }
+    </script>
+</body>
+</html>
+
