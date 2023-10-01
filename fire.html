@@ -1,0 +1,70 @@
+<html>
+<head>
+    <title>Fire Simulation</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fireCanvas" width="400" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('fireCanvas');
+        const ctx = canvas.getContext('2d');
+        const fireColorsPalette = ['#070707', '#1F0707', '#2F0F07', '#470F07', '#571707', '#671F07', '#771F07', '#8F2707', '#9F2F07', '#AF3F07', '#BF4707', '#C74707', '#DF4F07', '#DF5707', '#DF5707', '#D75F07', '#D7670F', '#CF6F0F', '#CF770F', '#CF7F0F', '#CF8717', '#C78717', '#C78F17', '#C7971F', '#BF9F1F', '#BF9F1F', '#BFA727', '#BFA727', '#BFAF2F', '#B7AF2F', '#B7B72F', '#B7B737', '#CFCF6F', '#DFDF9F', '#EFEFC7', '#FFFFFF'];
+
+        let fireWidth = 40;
+        let fireHeight = 40;
+        let fireIntensity = 2;
+        let firePixels = new Array(fireWidth * fireHeight).fill(0);
+
+        function startFire() {
+            initializeFire();
+            setInterval(updateFire, 100);
+        }
+
+        function initializeFire() {
+            for (let i = 0; i < fireWidth; i++) {
+                const lastIndex = (fireHeight - 1) * fireWidth;
+                firePixels[lastIndex + i] = 36;
+            }
+        }
+
+        function updateFire() {
+            for (let y = 0; y < fireHeight - 1; y++) {
+                for (let x = 0; x < fireWidth; x++) {
+                    spreadFire(y * fireWidth + x);
+                }
+            }
+            renderFire();
+        }
+
+        function spreadFire(pixelIndex) {
+            const belowPixelIndex = pixelIndex + fireWidth;
+            if (belowPixelIndex >= fireWidth * fireHeight) return;
+
+            const decay = Math.floor(Math.random() * fireIntensity);
+            const belowPixelFireIntensity = firePixels[belowPixelIndex];
+            const newFireIntensity = belowPixelFireIntensity - decay >= 0 ? belowPixelFireIntensity - decay : 0;
+
+            firePixels[pixelIndex - decay] = newFireIntensity;
+        }
+
+        function renderFire() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let y = 0; y < fireHeight; y++) {
+                for (let x = 0; x < fireWidth; x++) {
+                    const pixelIndex = y * fireWidth + x;
+                    const fireIntensity = firePixels[pixelIndex];
+                    const color = fireColorsPalette[fireIntensity];
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x * 10, y * 10, 10, 10);
+                }
+            }
+        }
+
+        startFire();
+    </script>
+</body>
+</html>
