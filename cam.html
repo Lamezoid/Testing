@@ -8,7 +8,9 @@
   const captureButton = document.getElementById('capture');
 
   const constraints = {
-    video: true,
+     video: {
+      facingMode: { exact: "environment" }
+    }
   };
 
   captureButton.addEventListener('click', () => {
