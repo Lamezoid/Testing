@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Camera Capture</title>
+  <style>
+    #container {
+      position: relative;
+      display: inline-block;
+    }
+
+    #capture {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      background-color: rgba(255, 255, 255, 0.7);
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <video id="player" controls autoplay></video>
+    <button id="capture">Capture</button>
+  </div>
+  <canvas id="canvas" width="320" height="240"></canvas>
+  <script>
+    const player = document.getElementById('player');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const captureButton = document.getElementById('capture');
+    const container = document.getElementById('container');
+
+    const constraints = {
+      video: true,
+    };
+
+    captureButton.addEventListener('click', () => {
+      // Draw the video frame to the canvas.
+      context.drawImage(player, 0, 0, canvas.width, canvas.height);
+    });
+
+    // Attach the video stream to the video element and autoplay.
+    navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+      player.srcObject = stream;
+    });
+
+    // Fullscreen change event
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) {
+        container.style.position = 'fixed';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.width = '100%';
+        container.style.height = '100%';
+      } else {
+        container.style.position = 'relative';
+        container.style.width = 'auto';
+        container.style.height = 'auto';
+      }
+    });
+
+    // Request fullscreen on video click
+    player.addEventListener('click', () => {
+      if (player.requestFullscreen) {
+        player.requestFullscreen();
+      }
+    });
+  </script>
+</body>
+</html>
+
