@@ -17,7 +17,7 @@
         const captureButton = document.getElementById('capture');
 
         // Access the rear camera
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        navigator.mediaDevices.getUserMedia({ video: { facingMode:  exact 'environment' } })
             .then(stream => {
                 video.srcObject = stream;
             })
