@@ -16,8 +16,8 @@
         const context = canvas.getContext('2d');
         const captureButton = document.getElementById('capture');
 
-        // Access the rear camera
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        // Access the rear camera with higher resolution
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } })
             .then(stream => {
                 video.srcObject = stream;
             })
