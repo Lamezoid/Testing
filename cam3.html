@@ -6,7 +6,7 @@
     <title>Camera Capture</title>
 </head>
 <body>
-    <video id="video" width="320" height="240" autoplay></video>
+    <video id="video" autoplay></video>
     <button id="capture">Capture</button>
     <canvas id="canvas"></canvas>
 
@@ -16,10 +16,17 @@
         const context = canvas.getContext('2d');
         const captureButton = document.getElementById('capture');
 
-        // Access the rear camera with higher resolution
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } })
+        // Access the rear camera with the highest resolution
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 4096 }, height: { ideal: 2160 } } })
             .then(stream => {
                 video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    // Set video and canvas dimensions based on the actual video resolution
+                    video.width = video.videoWidth;
+                    video.height = video.videoHeight;
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                };
             })
             .catch(err => {
                 console.error('Error accessing the camera: ', err);
@@ -27,11 +34,6 @@
 
         // Capture the image
         captureButton.addEventListener('click', () => {
-            // Calculate aspect ratio
-            const aspectRatio = video.videoWidth / video.videoHeight;
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoWidth / aspectRatio;
-
             // Draw the image
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
         });
