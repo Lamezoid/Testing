@@ -21,37 +21,45 @@
     <button id="capture">Capture</button>
     <canvas id="canvas"></canvas>
 
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const context = canvas.getContext('2d');
-        const captureButton = document.getElementById('capture');
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const captureButton = document.getElementById('capture');
 
-        // Access the rear camera
+    // Function to access the rear camera
+    function startCamera() {
         navigator.mediaDevices.getUserMedia({
             video: { facingMode: { exact: 'environment' } }
         })
         .then(stream => {
             video.srcObject = stream;
+            video.play(); // Ensure the video plays
         })
         .catch(err => {
             console.error("Error accessing camera: ", err);
+            alert("Unable to access the camera. Please check your permissions and try again.");
         });
+    }
 
-        // Capture the photo when button is clicked
-        captureButton.addEventListener('click', () => {
-            // Set canvas dimensions to match video
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+    // Start the camera when the page loads
+    window.addEventListener('load', startCamera);
 
-            // Draw the video frame to the canvas
-            context.drawImage(video, 0, 0);
+    // Capture the photo when the button is clicked
+    captureButton.addEventListener('click', () => {
+        // Set canvas dimensions to match video
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
-            // You can convert the canvas to an image data URL
-            const imageData = canvas.toDataURL('image/png');
-            console.log(imageData); // You can use this imageData as needed
-        });
-    </script>
+        // Draw the video frame to the canvas
+        context.drawImage(video, 0, 0);
+
+        // Convert the canvas to an image data URL
+        const imageData = canvas.toDataURL('image/png');
+        console.log(imageData); // You can use this imageData as needed
+    });
+</script>
+
 </body>
 </html>
 
