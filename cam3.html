@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebRTC Camera Capture</title>
+  <title>WebRTC Rear Camera Capture</title>
   <style>
     video, canvas {
       max-width: 100%;
@@ -12,7 +12,7 @@
   </style>
 </head>
 <body>
-  <h1>Camera Capture</h1>
+  <h1>Rear Camera Capture</h1>
   <video id="video" autoplay playsinline></video>
   <button id="capture">Capture</button>
   <canvas id="canvas"></canvas>
@@ -23,15 +23,17 @@
     const captureButton = document.getElementById('capture');
     const context = canvas.getContext('2d');
 
-    // Access the camera
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        video.srcObject = stream;
-      })
-      .catch(err => {
-        console.error('Error accessing the camera: ' + err.message);
-        alert('Error accessing the camera: ' + err.message);
-      });
+    // Access the rear camera by specifying the 'facingMode' to 'environment'
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: 'environment' } }
+    })
+    .then(stream => {
+      video.srcObject = stream;
+    })
+    .catch(err => {
+      console.error('Error accessing the camera: ' + err.message);
+      alert('Error accessing the camera: ' + err.message);
+    });
 
     // Capture frame when the button is clicked
     captureButton.addEventListener('click', () => {
