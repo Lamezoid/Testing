@@ -8,16 +8,26 @@
 <body>
     <video id="video" autoplay style="width: 100%; height: auto; border: 1px solid black;"></video>
     <script>
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
-        .then(stream => {
-            const video = document.getElementById('video');
-            video.srcObject = stream;
-            video.play();
-        })
-        .catch(err => {
-            alert("Error accessing camera: " + err.message);
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
+            .then(stream => {
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                video.play(); // Make sure to play the video
+            })
+            .catch(err => {
+                alert("Error accessing camera: " + err.message);
+            });
+        }
+
+        // Add an error listener to the video element
+        const video = document.getElementById('video');
+        video.addEventListener('error', (e) => {
+            alert("Video error: " + e.message);
         });
+
+        // Start the camera when the page loads
+        window.addEventListener('load', startCamera);
     </script>
 </body>
 </html>
-
