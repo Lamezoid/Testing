@@ -1,33 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Camera Access</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebRTC Camera Capture</title>
+  <style>
+    video, canvas {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
 </head>
 <body>
-    <video id="video" autoplay style="width: 100%; height: auto; border: 1px solid black;"></video>
-    <script>
-        function startCamera() {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
-            .then(stream => {
-                const video = document.getElementById('video');
-                video.srcObject = stream;
-                video.play(); // Make sure to play the video
-            })
-            .catch(err => {
-                alert("Error accessing camera: " + err.message);
-            });
-        }
+  <h1>Camera Capture</h1>
+  <video id="video" autoplay playsinline></video>
+  <button id="capture">Capture</button>
+  <canvas id="canvas"></canvas>
 
-        // Add an error listener to the video element
-        const video = document.getElementById('video');
-        video.addEventListener('error', (e) => {
-            alert("Video error: " + e.message);
-        });
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureButton = document.getElementById('capture');
+    const context = canvas.getContext('2d');
 
-        // Start the camera when the page loads
-        window.addEventListener('load', startCamera);
-    </script>
+    // Access the camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        console.error('Error accessing the camera: ' + err.message);
+        alert('Error accessing the camera: ' + err.message);
+      });
+
+    // Capture frame when the button is clicked
+    captureButton.addEventListener('click', () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    });
+  </script>
 </body>
 </html>
