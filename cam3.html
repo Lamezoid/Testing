@@ -6,7 +6,7 @@
     <title>Test Camera Access</title>
 </head>
 <body>
-    <video id="video" autoplay></video>
+    <video id="video" autoplay style="width: 100%; height: auto; border: 1px solid black;"></video>
     <script>
         navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
         .then(stream => {
@@ -15,10 +15,9 @@
             video.play();
         })
         .catch(err => {
-            console.error("Error accessing camera: ", err);
+            alert("Error accessing camera: " + err.message);
         });
     </script>
 </body>
 </html>
-
 
